@@ -1,0 +1,11 @@
+[
+  {
+    "id": "1",
+    "title": "Introduction (2025)",
+    "author": "Matt Rkiouak",
+    "date": "2025-04-21",
+    "imageUrl": "/vaguely-cubist.jpeg",
+    "snippet": "Who I am & what I want to communicate",
+    "content": "<h3>Where to start?</h3><p><i>\"Measure twice, cut once\"</i>. It's a trait of humanity to foil yourself acting without thinking. I hope to share some deliberate thoughts, and if I'm lucky, occasionally influence the way you act.</p><p> I work in the Bay Area as a Software Engineer, in the past I've been a founding engineer, I've scaled engineering teams as the first senior engineering hire growing the organization to 150+ engineers (during the ZIRP days). I'm  customer & business outcome oriented and am always on the lookout for great teams to deliver and create value with.</p><p>Images on the site will be generated via GenAI, partly as a way for me to experiment with the tooling.</p>"
+  }
+]
