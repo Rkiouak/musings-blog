@@ -2,13 +2,26 @@
 import React from 'react';
 import { Card, CardContent, CardMedia, Typography, CardActions, Button } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
+import { useTheme } from '@mui/material/styles';
+
 
 // Expects a 'post' object prop with id, title, snippet, imageUrl, date, author
 function BlogPostPreview({ post }) {
-  if (!post) return null; // Handle case where post data might be missing
+    const theme = useTheme(); // Get the theme object
+
+    if (!post) return null; // Handle case where post data might be missing
 
   return (
-    <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <Card sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        transition: theme.transitions.create(['box-shadow', 'transform'], { duration: theme.transitions.duration.short }), // Add transition
+        '&:hover': {
+            transform: 'translateY(-4px)', // Example: slight lift
+            boxShadow: theme.shadows[4], // Example: increase shadow
+        }
+    }}>
        {post.imageUrl && (
          <CardMedia
            component="img"
