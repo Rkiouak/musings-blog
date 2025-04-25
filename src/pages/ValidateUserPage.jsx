@@ -22,7 +22,7 @@ function ValidateUserPage() {
         const validateUser = async () => {
             setLoading(true);
             setError('');
-            const validateUrl = '/users/'; // Adjust if needed
+            const validateUrl = '/api/users/'; // Adjust if needed
 
             try {
                 const response = await fetch(validateUrl, {
