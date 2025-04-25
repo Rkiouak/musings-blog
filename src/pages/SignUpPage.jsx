@@ -1,6 +1,6 @@
-// src/pages/SignUpPage.jsx
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// Remove useNavigate if no longer needed after signup
+// import { useNavigate } from 'react-router-dom';
 import {
     Container,
     Box,
@@ -11,24 +11,27 @@ import {
     Alert,
     CircularProgress,
     Grid,
-    Link as MuiLink
+    Link as MuiLink,
+    Snackbar // Import Snackbar for toast messages
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 
 function SignUpPage() {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
-    const [givenName, setGivenName] = useState(''); // <-- Add state for given name
-    const [familyName, setFamilyName] = useState(''); // <-- Add state for family name
+    const [givenName, setGivenName] = useState('');
+    const [familyName, setFamilyName] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
+    const [showSuccessToast, setShowSuccessToast] = useState(false); // State for success toast
+    // const navigate = useNavigate(); // Comment out or remove if not navigating
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         setError('');
+        setShowSuccessToast(false); // Reset toast state on new submission
 
         // Basic Validation
         if (password !== confirmPassword) {
@@ -39,9 +42,12 @@ function SignUpPage() {
             setError('Password must be at least 6 characters long.');
             return;
         }
-        // Add checks for other required fields if necessary
         if (!givenName || !familyName) {
             setError('Please fill in your first and last name.');
+            return;
+        }
+        if (!username || !email) {
+            setError('Please fill in username and email.');
             return;
         }
 
@@ -49,7 +55,8 @@ function SignUpPage() {
         setLoading(true);
 
         // --- API Call ---
-        const signUpUrl = '/api/users/';
+        // Update the API endpoint to /api/challenge/
+        const signUpUrl = '/api/challenge/'; // <--- UPDATED ENDPOINT
         const userData = {
             username: username,
             email: email,
@@ -63,33 +70,35 @@ function SignUpPage() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // Add other headers like Accept if needed
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify(userData), // Send data as JSON string
+                body: JSON.stringify(userData),
             });
 
             if (!response.ok) {
                 let errorMsg = `Sign up failed with status: ${response.status}`;
                 try {
-                    // Try to get more specific error from response body
                     const errorData = await response.json();
-                    // Adjust based on your API's error response structure
                     errorMsg = errorData.detail || errorData.message || errorMsg;
                 } catch (e) {
-                    // Ignore if response body isn't JSON or can't be parsed
                     errorMsg = `${errorMsg}. Could not parse error details.`;
                 }
                 throw new Error(errorMsg);
             }
 
-            // Assuming successful signup returns status 200/201
-            // Optionally parse the response if it contains useful data
-            // const result = await response.json();
-            // console.log('Sign up successful:', result);
+            // --- SUCCESS HANDLING ---
+            // Instead of navigating, show the success toast
+            setShowSuccessToast(true); // <--- SHOW SUCCESS TOAST
+            // navigate('/login?signup=success'); // <--- REMOVED NAVIGATION
 
-            // Redirect to login page with a success message
-            navigate('/login?signup=success');
+            // Optionally clear the form fields after successful submission
+            // setUsername('');
+            // setEmail('');
+            // setGivenName('');
+            // setFamilyName('');
+            // setPassword('');
+            // setConfirmPassword('');
+
 
         } catch (err) {
             console.error("Sign up API call failed:", err);
@@ -99,15 +108,24 @@ function SignUpPage() {
         }
     };
 
+    // Snackbar close handler
+    const handleCloseToast = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setShowSuccessToast(false);
+    };
+
     return (
         <Container component="main" maxWidth="xs">
             <Paper elevation={3} sx={{ marginTop: 8, padding: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Typography component="h1" variant="h5">
                     Sign Up
                 </Typography>
-                {error && <Alert severity="error" sx={{ width: '100%', mt: 2 }}>{error}</Alert>}
+                {/* Display general errors */}
+                {error && !showSuccessToast && <Alert severity="error" sx={{ width: '100%', mt: 2 }}>{error}</Alert>}
                 <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
-                    {/* Add Fields for Given Name and Family Name */}
+                    {/* Form Fields (Grid, TextFields for names, username, email, passwords) */}
                     <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
                             <TextField
@@ -146,7 +164,6 @@ function SignUpPage() {
                         label="Username"
                         name="username"
                         autoComplete="username"
-                        // autoFocus // Removed autoFocus to avoid jumping past name fields
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         disabled={loading}
@@ -189,8 +206,9 @@ function SignUpPage() {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         disabled={loading}
-                        error={!!error && password !== confirmPassword}
-                        helperText={error && password !== confirmPassword ? "Passwords do not match" : ""}
+                        // Show error specifically for password mismatch, separate from general error
+                        error={!!error && error.includes('Passwords do not match')}
+                        helperText={error && error.includes('Passwords do not match') ? "Passwords do not match" : ""}
                     />
                     <Button
                         type="submit"
@@ -210,6 +228,18 @@ function SignUpPage() {
                     </Grid>
                 </Box>
             </Paper>
+
+            {/* Snackbar for Success Toast */}
+            <Snackbar
+                open={showSuccessToast}
+                autoHideDuration={6000} // Hide after 6 seconds
+                onClose={handleCloseToast}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert onClose={handleCloseToast} severity="success" variant="filled" sx={{ width: '100%' }}>
+                    Please check your email to complete the sign up process!
+                </Alert>
+            </Snackbar>
         </Container>
     );
 }

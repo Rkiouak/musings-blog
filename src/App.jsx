@@ -8,12 +8,14 @@ import NotFoundPage from './pages/NotFoundPage';
 import LoginPage from './pages/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import SignUpPage from './pages/SignUpPage';
+import ValidateUserPage from "./pages/ValidateUserPage.jsx";
 
 
 function App() {
     return (
         <Routes>
             <Route path="/login" element={<LoginPage/>}/>
+            <Route path="/users/validate" element={<ValidateUserPage />} />
             <Route path="/" element={<Layout/>}><Route path="/signup" element={<SignUpPage />} />
                 <Route index element={<HomePage/>}/> {/* index route for '/' */}
                 <Route element={<ProtectedRoute/>}>

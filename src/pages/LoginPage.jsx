@@ -1,5 +1,5 @@
 // src/pages/LoginPage.jsx
-import React, { useState, useEffect } from 'react'; // <-- Import useEffect
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -9,11 +9,11 @@ import {
   Button,
   Typography,
   Paper,
-  Alert, // Keep Alert for login errors
+  Alert,
   CircularProgress,
   Grid,
   Link as MuiLink,
-  Snackbar // <-- Import Snackbar
+  Snackbar // Keep Snackbar import
 } from '@mui/material';
 
 function LoginPage() {
@@ -21,22 +21,48 @@ function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showSuccessToast, setShowSuccessToast] = useState(false); // <-- State for Snackbar visibility
+  // --- MODIFICATION: Use state for toast message and visibility ---
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastSeverity, setToastSeverity] = useState('success'); // Default to success
+  // --- END MODIFICATION ---
   const navigate = useNavigate();
-  const location = useLocation();
+  const location = useLocation(); // Keep location hook
   const auth = useAuth();
 
   const from = location.state?.from?.pathname || '/';
 
-  // Check for signup success on component mount and location change
+  // --- MODIFICATION: Consolidate useEffect for showing toasts ---
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    if (params.get('signup') === 'success') {
-      setShowSuccessToast(true);
-      // Optional: Clean the URL query parameter after showing the toast
+    const signupSuccess = params.get('signup') === 'success';
+    const validationSuccess = location.state?.validationSuccess; // Check state
+
+    let message = '';
+    let severity = 'success';
+
+    if (validationSuccess) {
+      message = 'Thank you for signing up! Please sign in with your new credentials.';
+      // Clear the state after reading it to prevent the message
+      // from showing again on subsequent renders/navigations within the login page.
+      navigate(location.pathname, { replace: true, state: {} });
+    } else if (signupSuccess) {
+      // Existing message from signup page (might be redundant if validation page is always used)
+      message = 'Sign up initiated! Please check your email or sign in if validation complete.';
+      // Optional: Clean the URL query parameter
       // navigate(location.pathname, { replace: true });
     }
-  }, [location]); // <-- Dependency array includes location
+
+    if (message) {
+      setToastMessage(message);
+      setToastSeverity(severity);
+      setToastOpen(true);
+    }
+
+    // Add navigate to dependency array as it's used to clear state
+  }, [location.search, location.state, navigate]);
+  // --- END MODIFICATION ---
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -45,6 +71,7 @@ function LoginPage() {
 
     try {
       await auth.login(username, password, from);
+      // Login handles navigation on success internally
     } catch (err) {
       console.error("Login failed:", err);
       setError(err.message || 'Login failed. Please check your credentials.');
@@ -58,19 +85,18 @@ function LoginPage() {
     if (reason === 'clickaway') {
       return;
     }
-    setShowSuccessToast(false);
+    setToastOpen(false); // Use the state setter
   };
 
+  // --- UI remains largely the same, just update Snackbar props ---
   return (
       <Container component="main" maxWidth="xs">
         <Paper elevation={3} sx={{ marginTop: 8, padding: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <Typography component="h1" variant="h5">
             Sign in
           </Typography>
-          {/* Keep Alert only for login errors */}
           {error && <Alert severity="error" sx={{ width: '100%', mt: 2 }}>{error}</Alert>}
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
-            {/* ... (TextFields for username and password remain the same) ... */}
             <TextField
                 margin="normal"
                 required
@@ -116,18 +142,18 @@ function LoginPage() {
           </Box>
         </Paper>
 
-        {/* Snackbar for Success Message */}
+        {/* --- MODIFICATION: Updated Snackbar --- */}
         <Snackbar
-            open={showSuccessToast}
-            autoHideDuration={6000} // Hide after 6 seconds
+            open={toastOpen}
+            autoHideDuration={6000}
             onClose={handleCloseToast}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} // Position
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
-          {/* Use Alert inside Snackbar for consistent styling */}
-          <Alert onClose={handleCloseToast} severity="success" variant="filled" sx={{ width: '100%' }}>
-            Sign up successful! Please sign in.
+          <Alert onClose={handleCloseToast} severity={toastSeverity} variant="filled" sx={{ width: '100%' }}>
+            {toastMessage}
           </Alert>
         </Snackbar>
+        {/* --- END MODIFICATION --- */}
       </Container>
   );
 }
