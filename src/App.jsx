@@ -1,6 +1,7 @@
 // src/App.jsx
-import React from 'react';
-import {Routes, Route} from 'react-router-dom';
+import React, { Suspense, lazy } from 'react'; // Import Suspense and lazy
+import { Routes, Route } from 'react-router-dom';
+import { Box, CircularProgress } from '@mui/material'; // Import for fallback UI
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
 import PostDetailPage from './pages/PostDetailPage';
@@ -9,24 +10,52 @@ import LoginPage from './pages/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import SignUpPage from './pages/SignUpPage';
 import ValidateUserPage from "./pages/ValidateUserPage.jsx";
+import ProfilePage from './pages/ProfilePage';
 
+// --- Lazy load CreatePostPage ---
+const CreatePostPage = lazy(() => import('./pages/CreatePostPage'));
+// --- End Lazy load ---
+
+// --- Fallback component for Suspense ---
+function LoadingFallback() {
+    return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+            <CircularProgress />
+        </Box>
+    );
+}
+// --- End Fallback ---
 
 function App() {
     return (
         <Routes>
-            <Route path="/login" element={<LoginPage/>}/>
-            <Route path="/users/validate" element={<ValidateUserPage />} />
-            <Route path="/" element={<Layout/>}><Route path="/signup" element={<SignUpPage />} />
-                <Route index element={<HomePage/>}/> {/* index route for '/' */}
-                <Route element={<ProtectedRoute/>}>
-                    <Route path="post/:postId" element={<PostDetailPage/>}/>
+            <Route path="/" element={<Layout />}>
+                {/* Public Routes */}
+                <Route path="/signup" element={<SignUpPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/users/validate" element={<ValidateUserPage />} />
+                <Route index element={<HomePage />} /> {/* index route for '/' */}
+
+                {/* Protected Routes */}
+                <Route element={<ProtectedRoute />}>
+                    <Route path="post/:postId" element={<PostDetailPage />} />
+                    <Route path="profile" element={<ProfilePage />} />
+                    {/* --- Use Suspense for the lazy-loaded route --- */}
+                    <Route
+                        path="create-post"
+                        element={
+                            <Suspense fallback={<LoadingFallback />}>
+                                <CreatePostPage />
+                            </Suspense>
+                        }
+                    />
+                    {/* --- End Suspense --- */}
+                    {/* Add other protected routes here */}
                 </Route>
             </Route>
 
             {/* Catch-all route for 404 Not Found */}
-            {/* This should be outside the Layout route or also wrapped if you want the 404 page to have the layout */}
-            <Route path="*" element={<Layout><NotFoundPage/></Layout>}/> {/* Option: Wrap 404 in Layout */}
-            {/* <Route path="*" element={<NotFoundPage />} /> */} {/* Option: Standalone 404 */}
+            <Route path="*" element={<Layout><NotFoundPage /></Layout>} />
 
         </Routes>
     );
