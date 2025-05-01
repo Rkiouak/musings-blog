@@ -1,15 +1,17 @@
 // src/pages/HomePage.jsx
-import React, { useState, useEffect } from 'react';
-import { Grid, Typography, Box, CircularProgress, Alert, Paper, Divider } from '@mui/material'; // Added Paper, Divider
+import React, {useState, useEffect} from 'react';
+import {Grid, Typography, Box, CircularProgress, Alert, Paper, Divider} from '@mui/material';
 import BlogPostPreview from '../components/BlogPostPreview';
-import { useAuth } from '../context/AuthContext'; // Import useAuth
+import {useAuth} from '../context/AuthContext'; // Import useAuth
+import CookieConsent from "react-cookie-consent";
+
 
 function HomePage() {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    const { token, handleUnauthorized } = useAuth(); // Get token and handler
+    const {token, handleUnauthorized} = useAuth(); // Get token and handler
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -24,7 +26,7 @@ function HomePage() {
             }
 
             try {
-                const response = await fetch('/api/posts/', { headers });
+                const response = await fetch('/api/posts/', {headers});
 
                 if (response.status === 401 || response.status === 403) {
                     console.warn("Received 401/403 fetching posts. Treating as potentially public endpoint.");
@@ -58,30 +60,33 @@ function HomePage() {
 
     return (
         <Box>
-            <Paper elevation={1} sx={{ p: 3, mb: 4, textAlign: 'left' }}>
+            <Paper elevation={1} sx={{p: 3, mb: 4, textAlign: 'left'}}>
                 <Typography variant="h5" component="h2" gutterBottom>
-                    Welcome to Musings
+                    Welcome to musings.
                 </Typography>
                 <Typography variant="body1" paragraph>
-                    This is a space for thoughts, reflections, and explorations. Basic blog platform clone WiP.
-                    Will add post comments next.
+                    This is a space for my thoughts, reflections, and explorations.
+
+                    I may add random things to this site, under an experiments tab.
+
+                    Will add comments on posts and other stuff at some point.
                 </Typography>
             </Paper>
 
-            <Divider sx={{ mb: 4 }} /> {/* Optional divider */}
+            <Divider sx={{mb: 4}}/> {/* Optional divider */}
 
-            <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ mb: 4 }}>
+            <Typography variant="h4" component="h1" gutterBottom align="center" sx={{mb: 4}}>
                 Latest Posts
             </Typography>
 
             {loading && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', my: 5 }}>
-                    <CircularProgress />
+                <Box sx={{display: 'flex', justifyContent: 'center', my: 5}}>
+                    <CircularProgress/>
                 </Box>
             )}
 
             {error && (
-                <Alert severity="error" sx={{ my: 3 }}>
+                <Alert severity="error" sx={{my: 3}}>
                     {error}
                 </Alert>
             )}
@@ -91,7 +96,7 @@ function HomePage() {
                     {posts.length > 0 ? (
                         posts.map((post) => (
                             <Grid item key={post.id} xs={12} sm={6} md={4}>
-                                <BlogPostPreview post={post} />
+                                <BlogPostPreview post={post}/>
                             </Grid>
                         ))
                     ) : (
@@ -102,6 +107,16 @@ function HomePage() {
                     }
                 </Grid>
             )}
+            <CookieConsent
+                location="bottom"
+                buttonText="I Accept"
+                cookieName="musings-mr.net"
+                style={{ background: "#2B373B" }}
+                buttonStyle={{ color: "#4e503b", fontSize: "13px" }}
+                expires={150}
+            >
+                This website uses cookies to better understand its audience.{" "}
+            </CookieConsent>
         </Box>
     );
 }

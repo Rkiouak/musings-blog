@@ -35,10 +35,9 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/users/validate" element={<ValidateUserPage />} />
                 <Route index element={<HomePage />} /> {/* index route for '/' */}
-
+                <Route path="post/:postId" element={<PostDetailPage />} />
                 {/* Protected Routes */}
                 <Route element={<ProtectedRoute />}>
-                    <Route path="post/:postId" element={<PostDetailPage />} />
                     <Route path="profile" element={<ProfilePage />} />
                     {/* --- Use Suspense for the lazy-loaded route --- */}
                     <Route
@@ -50,7 +49,6 @@ function App() {
                         }
                     />
                     {/* --- End Suspense --- */}
-                    {/* Add other protected routes here */}
                 </Route>
             </Route>
 
